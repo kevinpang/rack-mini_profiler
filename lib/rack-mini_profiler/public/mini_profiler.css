@@ -1,0 +1,24 @@
+#mini_profiler_results {
+	position: fixed;
+	position: fixed;
+	top: 0;
+	left: 0;
+	color: white;
+	font-size: 12px;
+	line-height: 1;
+	z-index: 2147483640; // near 32bit max 2147483647
+	list-style-type: none;
+}
+
+#mini_profiler_results li {
+	background-color: maroon;
+	padding: 4px 7px;
+	cursor: pointer;
+	border-bottom: 1px solid #999;
+	border-right: 1px solid #999;
+}
+
+#mini_profiler_results li.ajax-result {
+	background-color: #ddd;
+	color: #333;
+}
