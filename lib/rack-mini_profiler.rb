@@ -13,13 +13,6 @@ module Rack
       @env = env
       @original_request = Request.new(env)
       
-      # headers = env.select {|k,v| k.start_with? 'HTTP_'}
-      #     .collect {|pair| [pair[0].sub(/^HTTP_/, ''), pair[1]]}
-      #     .collect {|pair| pair.join(": ") << "<br>"}
-      #     .sort
-      #     
-      # puts headers
-      
       return load_profiler_results if load_profiler_results_request?
       
       start = Time.now
