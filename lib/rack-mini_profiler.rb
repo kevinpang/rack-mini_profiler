@@ -39,7 +39,6 @@ module Rack
         @headers && @headers["Content-Type"].include?("text/html")
       end
 
-      # Injects profiler HTML into the initial page response
       def inject_profiler_html
         code = ""
         code << %Q{<style type="text/css">#{read_public_file("mini_profiler.css")}</style>\n}
@@ -61,11 +60,6 @@ module Rack
         end
       end
     
-      # This routine is called whenever an AJAX request is made by the browser.
-      #
-      # Since we don't have the ability to modify the original page at this point, we save the profiler data off to the Rails cache
-      # and pass back an id in the response headers. The js code in mini_profiler.js intercepts all AJAX responses and checks for
-      # this response header. If found, it fires off another AJAX request to load the profiler data.
       def save_profiler_results
         id = UUIDTools::UUID.random_create.to_s
         Rails.cache.write(id, @response_time)
