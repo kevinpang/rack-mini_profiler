@@ -21,7 +21,7 @@ module Rack
       @response_time = (100 * (stop - start)).round
 
       save_profiler_results if ajax_request?
-      inject_profiler_html if !ajax_request? && html_response?
+      inject_profiler_html if initial_page_request?
 
       [@status, @headers, @response]
     end
@@ -33,6 +33,10 @@ module Rack
     
       def load_profiler_results_request?
         ajax_request? && @original_request.path =~ /mini-profiler-results/
+      end
+    
+      def initial_page_request?
+        !ajax_request? && html_response?
       end
     
       def html_response?
