@@ -14,8 +14,9 @@ Add the following line to your Gemfile
 
 	gem "rack-mini_profiler"
 
-Then add the following line to your application.rb file
+Then add the following lines to your application.rb file
 
+	require "rack/mini_profiler"
 	config.middleware.use "Rack::MiniProfiler"
 	
 ## Configuration options
