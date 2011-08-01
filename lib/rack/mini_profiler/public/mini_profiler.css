@@ -13,14 +13,25 @@
 	cursor: pointer;
 	border-bottom: 1px solid #999;
 	border-right: 1px solid #999;
+	position: relative;
 }
 
-#mini_profiler_results li.page-result {
+.mini-profiler-page-result {
 	background-color: maroon;
 	color: white;
 }
 
-#mini_profiler_results li.ajax-result {
+.mini-profiler-ajax-result {
 	background-color: #fff;
 	color: #333;
+}
+
+.mini-profiler-result-details {
+	position: absolute;
+	top: -1px;
+	left: 100%;
+	padding: 4px 7px;
+	background-color: #fff;
+	color: #333;
+	border: 1px solid #999;
 }
