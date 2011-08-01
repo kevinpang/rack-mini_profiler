@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Kevin Pang"]
   s.email       = ["kpanghmc@gmail.com"]
   s.homepage    = ""
-  s.summary     = %q{Rack::MiniProfiler is a piece of Rack middleware that injects profiling data into HTML pages.}
+  s.summary     = %q{Rack middleware that injects profiling data into HTML responses.}
   s.description = %q{}
 
   s.rubyforge_project = "rack-mini_profiler"
