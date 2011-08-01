@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "rack-mini_profiler/version"
+require "rack/mini_profiler/version"
 
 Gem::Specification.new do |s|
   s.name        = "rack-mini_profiler"
