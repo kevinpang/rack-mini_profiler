@@ -17,8 +17,12 @@ module Rack
       @stop = Time.now
 
       save_result
-      inject_html if initial_page_request?
-      @headers["X-Mini-Profiler-Id"] = @result.id if ajax_request?
+      
+      if initial_page_request?
+        inject_html
+      elsif ajax_request?
+        inject_header
+      end
 
       [@status, @headers, @response]
     end
@@ -67,6 +71,12 @@ module Rack
       
         @response.first.gsub!("</body>", "#{code}</body>")
         @headers["Content-Length"] = @response.first.bytesize.to_s
+      end
+      
+      # Javascript code in mini_profiler.js intercepts AJAX responses, checks for this header, and if found fires off another
+      # AJAX request to retrieve the result by the id specified.
+      def inject_header
+        @headers["X-Mini-Profiler-Id"] = @result.id
       end
     
       def read_public_file(filename)
