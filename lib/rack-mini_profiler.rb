@@ -3,8 +3,6 @@ require "uuidtools"
 
 module Rack
   class MiniProfiler
-    VERSION = "0.0.1"
-    
     def initialize(app)
       @app = app
     end
