@@ -9,7 +9,6 @@ module Rack
     
     def call(env)
       @env = env
-      @original_request = Request.new(@env)
       
       return load_result_response if load_result_request?
       
@@ -26,7 +25,7 @@ module Rack
     
     private
       def load_result_request?
-        ajax_request? && @original_request.path =~ /mini-profiler-results/
+        ajax_request? && @env["PATH_INFO"] =~ /mini-profiler-results/
       end
       
       def ajax_request?
@@ -48,7 +47,7 @@ module Rack
       end
       
       def load_result_response
-        result_id = @original_request.params["id"]
+        result_id = @env["QUERY_STRING"].gsub(/id=/, "")
         result = Rails.cache.read(result_id)
         result_json = result.to_json
         [200, {"Content-Length" => result_json.bytesize.to_s, "Content-Type" => "application/json"}, [result_json]]
