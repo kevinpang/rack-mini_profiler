@@ -19,6 +19,7 @@ module Rack
 
       save_result
       inject_html if initial_page_request?
+      @headers["X-Mini-Profiler-Id"] = @result.id if ajax_request?
 
       [@status, @headers, @response]
     end
@@ -43,9 +44,7 @@ module Rack
       def save_result
         @result = Result.new()
         @result.response_time = (100 * (@stop - @start)).round
-
         Rails.cache.write(@result.id, @result)
-        @headers["X-Mini-Profiler-Id"] = @result.id if ajax_request?
       end
       
       def load_result_response
