@@ -18,7 +18,8 @@ module Rack
       stop = Time.now
       @response_time = (100 * (stop - start)).round
 
-      save_profiler_results if ajax_request?
+      save_profiler_results
+      @headers["X-Mini-Profiler-Id"] = @id if ajax_request?
       inject_profiler_html if initial_page_request?
 
       [@status, @headers, @response]
@@ -43,13 +44,14 @@ module Rack
 
       def inject_profiler_html
         code = ""
+        code << %Q{<ol id="mini_profiler_results"></ol>}
         code << %Q{<style type="text/css">#{read_public_file("mini_profiler.css")}</style>\n}
         code << %Q{<script type="text/javascript" src="#{Options.jquery_path}"></script>\n"} if Options.inject_jquery
         code << %Q{<script type="text/javascript">#{read_public_file("mini_profiler.js")}</script>\n}
         code << %Q{
-          <ol id="mini_profiler_results">
-            <li>#{@response_time} ms</li>
-          </ol>
+          <script type="text/javascript">
+            MiniProfiler.showResult(#{load_profiler_json(@id)}, false);
+          </script>
         }
       
         @response.first.gsub!("</body>", "#{code}</body>")
@@ -63,22 +65,24 @@ module Rack
       end
     
       def save_profiler_results
-        id = UUIDTools::UUID.random_create.to_s
-        Rails.cache.write(id, @response_time)
-        @headers["X-Mini-Profiler-Id"] = id
+        @id = UUIDTools::UUID.random_create.to_s
+        Rails.cache.write(@id, @response_time)
       end
     
       def load_profiler_results
         id = Rack::Utils.parse_query(@original_request.path)["id"]
+        json = load_profiler_json(id)
+        [200, {"Content-Length" => json.bytesize.to_s, "Content-Type" => "application/json"}, [json]]
+      end
+      
+      def load_profiler_json(id)
         response_time = Rails.cache.read(id)
       
-        response_body = %Q{
+        json = %Q{
           {
             "response_time": #{@response_time}
           }
         }
-        
-        [200, {"Content-Length" => response_body.bytesize.to_s, "Content-Type" => "application/json"}, [response_body]]
       end
   end
 end
