@@ -11,16 +11,20 @@ module Rack
       @env = env
       @original_request = Request.new(env)
       
-      return load_profiler_results if load_profiler_results_request?
+      if load_result_request?
+        result_id = Rack::Utils.parse_query(@original_request.path)["id"]
+        result_json = load_result_json(result_id)
+        return [200, {"Content-Length" => result_json.bytesize.to_s, "Content-Type" => "application/json"}, [result_json]]
+      end
       
       start = Time.now
       @status, @headers, @response = @app.call(env)
       stop = Time.now
       @response_time = (100 * (stop - start)).round
 
-      save_profiler_results
-      @headers["X-Mini-Profiler-Id"] = @id if ajax_request?
-      inject_profiler_html if initial_page_request?
+      save_result
+      @headers["X-Mini-Profiler-Id"] = @result_id if ajax_request?
+      inject_html if initial_page_request?
 
       [@status, @headers, @response]
     end
@@ -30,7 +34,7 @@ module Rack
         @env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
       end
     
-      def load_profiler_results_request?
+      def load_result_request?
         ajax_request? && @original_request.path =~ /mini-profiler-results/
       end
     
@@ -42,7 +46,7 @@ module Rack
         @headers && @headers["Content-Type"].include?("text/html")
       end
 
-      def inject_profiler_html
+      def inject_html
         code = ""
         code << %Q{<ol id="mini_profiler_results"></ol>}
         code << %Q{<style type="text/css">#{read_public_file("mini_profiler.css")}</style>\n}
@@ -50,7 +54,7 @@ module Rack
         code << %Q{<script type="text/javascript">#{read_public_file("mini_profiler.js")}</script>\n}
         code << %Q{
           <script type="text/javascript">
-            MiniProfiler.showResult(#{load_profiler_json(@id)}, false);
+            MiniProfiler.showButton(#{load_result_json(@result_id)}, false);
           </script>
         }
       
@@ -64,21 +68,15 @@ module Rack
         end
       end
     
-      def save_profiler_results
-        @id = UUIDTools::UUID.random_create.to_s
-        Rails.cache.write(@id, @response_time)
+      def save_result
+        @result_id = UUIDTools::UUID.random_create.to_s
+        Rails.cache.write(@result_id, @response_time)
       end
     
-      def load_profiler_results
-        id = Rack::Utils.parse_query(@original_request.path)["id"]
-        json = load_profiler_json(id)
-        [200, {"Content-Length" => json.bytesize.to_s, "Content-Type" => "application/json"}, [json]]
-      end
+      def load_result_json(result_id)
+        response_time = Rails.cache.read(result_id)
       
-      def load_profiler_json(id)
-        response_time = Rails.cache.read(id)
-      
-        json = %Q{
+        %Q{
           {
             "response_time": #{@response_time}
           }
