@@ -71,7 +71,7 @@ module Rack
       end
     
       def read_public_file(filename)
-        output = ::File.open(::File.join(::File.dirname(__FILE__), "rack-mini_profiler", "public", filename), "r:UTF-8") do |f|
+        output = ::File.open(::File.join(::File.dirname(__FILE__), "mini_profiler", "public", filename), "r:UTF-8") do |f|
           f.read
         end
       end
