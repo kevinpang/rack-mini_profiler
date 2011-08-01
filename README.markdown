@@ -2,7 +2,7 @@
 
 ## Description
 
-Rack::MiniProfiler is a piece of Rack middleware that injects profiling data into HTML responses. It is based on the mvc-mini-profiler project created by the StackOverflow team.
+Rack middleware that injects profiling data into HTML responses. This project was inspired by StackOverflow's [mvc-mini-profiler](http://code.google.com/p/mvc-mini-profiler/).
 
 ## Features
 
