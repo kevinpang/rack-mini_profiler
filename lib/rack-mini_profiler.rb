@@ -11,7 +11,7 @@ module Rack
       @env = env
       @original_request = Request.new(@env)
       
-      return load_result if load_result_request?
+      return load_result_response if load_result_request?
       
       @start = Time.now
       @status, @headers, @response = @app.call(env)
@@ -48,7 +48,7 @@ module Rack
         @headers["X-Mini-Profiler-Id"] = @result.id if ajax_request?
       end
       
-      def load_result
+      def load_result_response
         result_id = @original_request.params["id"]
         result = Rails.cache.read(result_id)
         result_json = result.to_json
