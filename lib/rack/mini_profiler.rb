@@ -62,7 +62,7 @@ module Rack
         code << %Q{<ol id="mini_profiler_results"></ol>}
         code << %Q{<style type="text/css">#{read_public_file("mini_profiler.css")}</style>\n}
         code << %Q{<script type="text/javascript" src="#{Options.jquery_path}"></script>\n"} if Options.inject_jquery
-        code << %Q{<script type="text/javascript">#{read_public_file("mini_profiler.js")}</script>\n}
+        code << %Q{<script type="text/javascript">#{read_public_file("mini_profiler.js")}</script>\n}.gsub(/http:\/\/localhost:3000/, @env["SERVER_NAME"] + @env["SCRIPT_NAME"])
         code << %Q{
           <script type="text/javascript">
             MiniProfiler.showButton(#{@result.to_json}, false);
