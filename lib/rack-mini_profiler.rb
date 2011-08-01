@@ -1,5 +1,5 @@
 require "rack-mini_profiler/options"
-require "uuidtools"
+require "rack-mini_profiler/result"
 
 module Rack
   class MiniProfiler
@@ -9,33 +9,27 @@ module Rack
     
     def call(env)
       @env = env
-      @original_request = Request.new(env)
+      @original_request = Request.new(@env)
       
-      if load_result_request?
-        result_id = Rack::Utils.parse_query(@original_request.path)["id"]
-        result_json = load_result_json(result_id)
-        return [200, {"Content-Length" => result_json.bytesize.to_s, "Content-Type" => "application/json"}, [result_json]]
-      end
+      return load_result if load_result_request?
       
-      start = Time.now
+      @start = Time.now
       @status, @headers, @response = @app.call(env)
-      stop = Time.now
-      @response_time = (100 * (stop - start)).round
+      @stop = Time.now
 
       save_result
-      @headers["X-Mini-Profiler-Id"] = @result_id if ajax_request?
       inject_html if initial_page_request?
 
       [@status, @headers, @response]
     end
     
     private
-      def ajax_request?
-        @env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
-      end
-    
       def load_result_request?
         ajax_request? && @original_request.path =~ /mini-profiler-results/
+      end
+      
+      def ajax_request?
+        @env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
       end
     
       def initial_page_request?
@@ -44,6 +38,21 @@ module Rack
     
       def html_response?
         @headers && @headers["Content-Type"].include?("text/html")
+      end
+      
+      def save_result
+        @result = Result.new()
+        @result.response_time = (100 * (@stop - @start)).round
+
+        Rails.cache.write(@result.id, @result)
+        @headers["X-Mini-Profiler-Id"] = @result.id if ajax_request?
+      end
+      
+      def load_result
+        result_id = @original_request.params["id"]
+        result = Rails.cache.read(result_id)
+        result_json = result.to_json
+        [200, {"Content-Length" => result_json.bytesize.to_s, "Content-Type" => "application/json"}, [result_json]]
       end
 
       def inject_html
@@ -54,7 +63,7 @@ module Rack
         code << %Q{<script type="text/javascript">#{read_public_file("mini_profiler.js")}</script>\n}
         code << %Q{
           <script type="text/javascript">
-            MiniProfiler.showButton(#{load_result_json(@result_id)}, false);
+            MiniProfiler.showButton(#{@result.to_json}, false);
           </script>
         }
       
@@ -62,25 +71,10 @@ module Rack
         @headers["Content-Length"] = @response.first.bytesize.to_s
       end
     
-      def read_public_file(file)
-        output = ::File.open(::File.join(::File.dirname(__FILE__), "rack-mini_profiler", "public", file), "r:UTF-8") do |f|
+      def read_public_file(filename)
+        output = ::File.open(::File.join(::File.dirname(__FILE__), "rack-mini_profiler", "public", filename), "r:UTF-8") do |f|
           f.read
         end
-      end
-    
-      def save_result
-        @result_id = UUIDTools::UUID.random_create.to_s
-        Rails.cache.write(@result_id, @response_time)
-      end
-    
-      def load_result_json(result_id)
-        response_time = Rails.cache.read(result_id)
-      
-        %Q{
-          {
-            "response_time": #{@response_time}
-          }
-        }
       end
   end
 end
