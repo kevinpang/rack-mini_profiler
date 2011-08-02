@@ -47,7 +47,7 @@ module Rack
       def save_result
         @result = Result.new()
         @result.response_time = (100 * (@stop - @start)).round
-        @result.url = @env["SERVER_NAME"] + @env["SCRIPT_NAME"] + @env["PATH_INFO"] + @env["QUERY_STRING"]
+        @result.url = @env["SERVER_NAME"] + @env["SCRIPT_NAME"] + @env["PATH_INFO"] + "?" + @env["QUERY_STRING"]
         Rails.cache.write(@result.id, @result)
       end
       
@@ -60,7 +60,7 @@ module Rack
 
       def inject_html
         code = ""
-        code << %Q{<table id="mini_profiler_results"></table>}
+        code << %Q{<ol id="mini_profiler_results"></ol>}
         code << %Q{<style type="text/css">#{read_public_file("mini_profiler.css")}</style>\n}
         code << %Q{<script type="text/javascript" src="#{Options.jquery_path}"></script>\n"} if Options.inject_jquery
         code << %Q{<script type="text/javascript">#{read_public_file("mini_profiler.js")}</script>\n}.gsub(/http:\/\/localhost:3000/, @env["SERVER_NAME"] + @env["SCRIPT_NAME"])
