@@ -2,7 +2,7 @@ module Rack
   class MiniProfiler
     module Options
       @@inject_jquery = false
-      @@jquery_path = "https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"
+      @@inject_jquery_tmpl = true
 
       class << self
         def inject_jquery
@@ -13,12 +13,12 @@ module Rack
           @@inject_jquery = value
         end
 
-        def jquery_path
-          @@jquery_path
+        def inject_jquery_tmpl
+          @@inject_jquery_tmpl
         end
-
-        def jquery_path=(value)
-          @@jquery_path = value
+        
+        def inject_jquery_tmpl=(value)
+          @@inject_jquery_tmpl = value
         end
       end      
     end

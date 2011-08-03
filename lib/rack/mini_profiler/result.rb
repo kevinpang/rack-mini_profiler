@@ -3,7 +3,7 @@ require "uuidtools"
 module Rack
   class MiniProfiler
     class Result
-      attr_accessor :response_time, :url
+      attr_accessor :response_time, :url, :ajax_result
       attr_reader :id
       
       def initialize
@@ -15,7 +15,8 @@ module Rack
           {
             "id": "#{@id}",
             "response_time": #{@response_time},
-            "url": "#{url}"
+            "url": "#{url}",
+            "ajax_result": #{ajax_result ? true : false}
           }
         }
       end

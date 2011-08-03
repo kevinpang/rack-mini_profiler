@@ -47,7 +47,8 @@ module Rack
       def save_result
         @result = Result.new()
         @result.response_time = (100 * (@stop - @start)).round
-        @result.url = @env["SERVER_NAME"] + @env["SCRIPT_NAME"] + @env["PATH_INFO"] + "?" + @env["QUERY_STRING"]
+        @result.url = @env["SERVER_NAME"] + @env["SCRIPT_NAME"] + @env["PATH_INFO"] + (@env["QUERY_STRING"].empty? ? "" : "?" + @env["QUERY_STRING"]) 
+        @result.ajax_result = ajax_request?
         Rails.cache.write(@result.id, @result)
       end
       
@@ -60,13 +61,15 @@ module Rack
 
       def inject_html
         code = ""
-        code << %Q{<ol id="mini_profiler_results"></ol>}
+        code << %Q{<ol id="mini_profiler_results"></ol>\n}
         code << %Q{<style type="text/css">#{read_public_file("mini_profiler.css")}</style>\n}
-        code << %Q{<script type="text/javascript" src="#{Options.jquery_path}"></script>\n"} if Options.inject_jquery
+        code << %Q{<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>\n} if Options.inject_jquery
+        code << %Q{<script type="text/javascript" src="#{read_public_file("jquery-tmpl.js")}"></script>\n} if Options.inject_jquery_tmpl
+        code << %Q{<script id="mini_profiler_result_template" type="text/x-jquery-tmpl">#{read_public_file("mini_profiler.tmpl")}</script>\n}
         code << %Q{<script type="text/javascript">#{read_public_file("mini_profiler.js")}</script>\n}.gsub(/http:\/\/localhost:3000/, @env["SERVER_NAME"] + @env["SCRIPT_NAME"])
         code << %Q{
           <script type="text/javascript">
-            MiniProfiler.showButton(#{@result.to_json}, false);
+            MiniProfiler.showResult(#{@result.to_json});
           </script>
         }
       
@@ -77,7 +80,7 @@ module Rack
       # Javascript code in mini_profiler.js intercepts AJAX responses, checks for this header, and if found fires off another
       # AJAX request to retrieve the result by the id specified.
       def inject_header
-        @headers["X-Mini-Profiler-Id"] = @result.id
+        @headers["X-Mini-Profiler-Result-Id"] = @result.id
       end
     
       def read_public_file(filename)
