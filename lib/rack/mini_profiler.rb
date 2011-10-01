@@ -64,7 +64,7 @@ module Rack
         code << %Q{<ol id="mini_profiler_results"></ol>\n}
         code << %Q{<style type="text/css">#{read_public_file("mini_profiler.css")}</style>\n}
         code << %Q{<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>\n} if Options.inject_jquery
-        code << %Q{<script type="text/javascript" src="#{read_public_file("jquery-tmpl.js")}"></script>\n} if Options.inject_jquery_tmpl
+        code << %Q{<script type="text/javascript" type="text/javascript">#{read_public_file("jquery-tmpl.js")}"</script>\n} if Options.inject_jquery_tmpl
         code << %Q{<script id="mini_profiler_result_template" type="text/x-jquery-tmpl">#{read_public_file("mini_profiler.tmpl")}</script>\n}
         code << %Q{<script type="text/javascript">#{read_public_file("mini_profiler.js")}</script>\n}.gsub(/http:\/\/localhost:3000/, @env["SERVER_NAME"] + @env["SCRIPT_NAME"])
         code << %Q{

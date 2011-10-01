@@ -22,4 +22,5 @@ Then add the following lines to your application.rb file
 ## Configuration options
 
 	Rack::MiniProfiler::Options.inject_jquery	# Default false
+	Rack::MiniProfiler::Options.inject_jquery_tmpl # Default true
 	Rack::MiniProfiler::Options.jquery_path # Default "https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"
